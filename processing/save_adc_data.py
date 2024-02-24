@@ -34,19 +34,19 @@ def save_adc_data(filename, home_dir, capture_data_dir, json_filename, args):
     with open(mmwave_filename, 'r') as mmwave_file:
         jsonData_mmwave = json.load(mmwave_file)
 
-    jsonData_mmwave['mmWaveDevices']['rfConfig']['rlChanCfg_t']['rxChannelEn'] = rx_en 
-    jsonData_mmwave['mmWaveDevices']['rfConfig']['rlChanCfg_t']['txChannelEn'] = tx_en 
-    jsonData_mmwave['mmWaveDevices']['rfConfig']['rlFrameCfg_t']['chirpEndIdx'] = end_chirp
-    jsonData_mmwave['mmWaveDevices']['rfConfig']['rlFrameCfg_t']['chirpStartIdx'] = 0
-    jsonData_mmwave['mmWaveDevices']['rfConfig']['rlProfiles']['rlProfileCfg_t']['numAdcSamples'] = adc_samples
-    jsonData_mmwave['mmWaveDevices']['rfConfig']['rlFrameCfg_t']['numLoops'] = chirp_loops 
+    jsonData_mmwave['mmWaveDevices'][0]['rfConfig']['rlChanCfg_t']['rxChannelEn'] = rx_en
+    jsonData_mmwave['mmWaveDevices'][0]['rfConfig']['rlChanCfg_t']['txChannelEn'] = tx_en
+    jsonData_mmwave['mmWaveDevices'][0]['rfConfig']['rlFrameCfg_t']['chirpEndIdx'] = end_chirp
+    jsonData_mmwave['mmWaveDevices'][0]['rfConfig']['rlFrameCfg_t']['chirpStartIdx'] = 0
+    jsonData_mmwave['mmWaveDevices'][0]['rfConfig']['rlProfiles'][0]['rlProfileCfg_t']['numAdcSamples'] = adc_samples
+    jsonData_mmwave['mmWaveDevices'][0]['rfConfig']['rlFrameCfg_t']['numLoops'] = chirp_loops 
 
     jsonText_mmwave = json.dumps(jsonData_mmwave, indent=4)
     with open(mmwave_filename, 'w') as mmwave_file:
         mmwave_file.write(jsonText_mmwave)
 
     # Edit SETUP.JSON
-    setup_filename = os.path.join(os.getcwd(), '%s.setup.json' % json_filename)
+    setup_filename = os.path.join(home_dir, '%s.setup.json' % json_filename)
     with open(setup_filename, 'r') as setup_file:
         jsonData_setup = json.load(setup_file)
 
@@ -55,8 +55,8 @@ def save_adc_data(filename, home_dir, capture_data_dir, json_filename, args):
     jsonData_setup['capturedFiles']['fileBasePath'] = dataFilePath
 
     # Overwrite the raw file name
-    jsonData_setup['capturedFiles']['files']['processedFileName'] = f'{filename}_Raw_0.bin'
-    jsonData_setup['capturedFiles']['files']['rawFileName'] = f'{filename}_Raw_0.bin'
+    jsonData_setup['capturedFiles']['files'][0]['processedFileName'] = f'{filename}_Raw_0.bin'
+    jsonData_setup['capturedFiles']['files'][0]['rawFileName'] = f'{filename}_Raw_0.bin'
 
     # Overwrite config used to correct computer
     configUsed = mmwave_filename.replace('\\', '\\\\')
@@ -69,3 +69,6 @@ def save_adc_data(filename, home_dir, capture_data_dir, json_filename, args):
 
     # Call rawDataReader (You'll need to have the rawDataReader function defined or imported)
     TI.rawDataReader(setup_filename, rawDataFileName, radarCubeDataFileName)
+######################################################################################################
+
+# save_adc_data("1", "C:\\Users\\ubci\\OneDrive\\Bureau\\COM304\\comm-proj-radar", "processing\\record", "exported", [3, 4, 512, 1, "0X7", "0XF"])

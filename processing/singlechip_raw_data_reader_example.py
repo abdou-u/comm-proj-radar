@@ -24,17 +24,17 @@ def dp_numberOfEnabledChan(chanMask):
 def dp_generateADCDataParams(mmwaveJSON):
     global Params
     adcDataParams = {}
-    frameCfg = mmwaveJSON["mmWaveDevices"]["rfConfig"]["rlFrameCfg_t"]
+    frameCfg = mmwaveJSON["mmWaveDevices"][0]["rfConfig"]["rlFrameCfg_t"]
 
-    adcDataParams["dataFmt"] = mmwaveJSON["mmWaveDevices"]["rfConfig"]["rlAdcOutCfg_t"]["fmt"]["b2AdcOutFmt"]
-    adcDataParams["iqSwap"] = mmwaveJSON["mmWaveDevices"]["rawDataCaptureConfig"]["rlDevDataFmtCfg_t"]["iqSwapSel"]
-    adcDataParams["chanInterleave"] = mmwaveJSON["mmWaveDevices"]["rawDataCaptureConfig"]["rlDevDataFmtCfg_t"]["chInterleave"]
+    adcDataParams["dataFmt"] = mmwaveJSON["mmWaveDevices"][0]["rfConfig"]["rlAdcOutCfg_t"]["fmt"]["b2AdcOutFmt"]
+    adcDataParams["iqSwap"] = mmwaveJSON["mmWaveDevices"][0]["rawDataCaptureConfig"]["rlDevDataFmtCfg_t"]["iqSwapSel"]
+    adcDataParams["chanInterleave"] = mmwaveJSON["mmWaveDevices"][0]["rawDataCaptureConfig"]["rlDevDataFmtCfg_t"]["chInterleave"]
     adcDataParams["numChirpsPerFrame"] = frameCfg["numLoops"] * (frameCfg["chirpEndIdx"] - frameCfg["chirpStartIdx"] + 1)
-    adcDataParams["adcBits"] = mmwaveJSON["mmWaveDevices"]["rfConfig"]["rlAdcOutCfg_t"]["fmt"]["b2AdcBits"]
-    rxChanMask = int(mmwaveJSON["mmWaveDevices"]["rfConfig"]["rlChanCfg_t"]["rxChannelEn"], 16)
+    adcDataParams["adcBits"] = mmwaveJSON["mmWaveDevices"][0]["rfConfig"]["rlAdcOutCfg_t"]["fmt"]["b2AdcBits"]
+    rxChanMask = int(mmwaveJSON["mmWaveDevices"][0]["rfConfig"]["rlChanCfg_t"]["rxChannelEn"], 16)
 
     adcDataParams["numRxChan"] = dp_numberOfEnabledChan(rxChanMask)
-    adcDataParams["numAdcSamples"] = mmwaveJSON["mmWaveDevices"]["rfConfig"]["rlProfiles"]["rlProfileCfg_t"]["numAdcSamples"]
+    adcDataParams["numAdcSamples"] = mmwaveJSON["mmWaveDevices"][0]["rfConfig"]["rlProfiles"][0]["rlProfileCfg_t"]["numAdcSamples"]
 
     dp_printADCDataParams(adcDataParams)
 
@@ -70,14 +70,14 @@ def dp_generateRadarCubeParams(mmwaveJSON):
     global Params
 
     radarCubeParams = {}
-    frameCfg = mmwaveJSON["mmWaveDevices"]["rfConfig"]["rlFrameCfg_t"]
+    frameCfg = mmwaveJSON["mmWaveDevices"][0]["rfConfig"]["rlFrameCfg_t"]
 
-    radarCubeParams["iqSwap"] = mmwaveJSON["mmWaveDevices"]["rawDataCaptureConfig"]["rlDevDataFmtCfg_t"]["iqSwapSel"]
-    rxChanMask = int(mmwaveJSON["mmWaveDevices"]["rfConfig"]["rlChanCfg_t"]["rxChannelEn"], 16)
+    radarCubeParams["iqSwap"] = mmwaveJSON["mmWaveDevices"][0]["rawDataCaptureConfig"]["rlDevDataFmtCfg_t"]["iqSwapSel"]
+    rxChanMask = int(mmwaveJSON["mmWaveDevices"][0]["rfConfig"]["rlChanCfg_t"]["rxChannelEn"], 16)
     radarCubeParams["numRxChan"] = dp_numberOfEnabledChan(rxChanMask)
     radarCubeParams["numTxChan"] = frameCfg["chirpEndIdx"] - frameCfg["chirpStartIdx"] + 1
 
-    radarCubeParams["numRangeBins"] = 2 ** np.ceil(np.log2(mmwaveJSON["mmWaveDevices"]["rfConfig"]["rlProfiles"]["rlProfileCfg_t"]["numAdcSamples"]))
+    radarCubeParams["numRangeBins"] = 2 ** np.ceil(np.log2(mmwaveJSON["mmWaveDevices"][0]["rfConfig"]["rlProfiles"][0]["rlProfileCfg_t"]["numAdcSamples"]))
     radarCubeParams["numDopplerChirps"] = frameCfg["numLoops"]
 
     radarCubeParams["radarCubeFmt"] = 1  # RADAR_CUBE_FORMAT_1
@@ -97,7 +97,7 @@ def dp_printRadarCubeParams(radarCubeParams):
 
 def dp_generateRFParams(mmwaveJSON, radarCubeParams, adcDataParams):
     C = 3e8
-    profileCfg = mmwaveJSON["mmWaveDevices"]["rfConfig"]["rlProfiles"]["rlProfileCfg_t"]
+    profileCfg = mmwaveJSON["mmWaveDevices"][0]["rfConfig"]["rlProfiles"][0]["rlProfileCfg_t"]
 
     RFParams = {}
     RFParams["startFreq"] = profileCfg["startFreqConst_GHz"]
@@ -112,7 +112,7 @@ def dp_generateRFParams(mmwaveJSON, radarCubeParams, adcDataParams):
     RFParams["dopplerResolutionMps"] = C / (
                 2 * RFParams["startFreq"] * 1e9 * (profileCfg["idleTimeConst_usec"] + profileCfg["rampEndTime_usec"]) * 1e-6 * radarCubeParams[
             "numDopplerChirps"] * radarCubeParams["numTxChan"])
-    RFParams["framePeriodicity"] = mmwaveJSON["mmWaveDevices"]["rfConfig"]["rlFrameCfg_t"]["framePeriodicity_msec"]
+    RFParams["framePeriodicity"] = mmwaveJSON["mmWaveDevices"][0]["rfConfig"]["rlFrameCfg_t"]["framePeriodicity_msec"]
     return RFParams
 
 def dp_reshape2LaneLVDS(rawData):
@@ -240,7 +240,7 @@ def rawDataReader(radarCfgFileName,rawDataFileName,radarCubeDataFileName):
 
     with open(mmwaveJSONfilename, 'r') as json_file:
         mmwaveJSON = json.load(json_file)
-    binFile = os.path.join(setupJSON["capturedFiles"]["fileBasePath"], setupJSON["capturedFiles"]["files"]["rawFileName"])
+    binFile = os.path.join(setupJSON["capturedFiles"]["fileBasePath"], setupJSON["capturedFiles"]["files"][0]["rawFileName"])
     Params["fid_rawData"] = open(binFile, "rb")
 
     adcDataParams = dp_generateADCDataParams(mmwaveJSON)

@@ -51,7 +51,7 @@ END_CHIRP_TX = NUM_TX-1
 CHIRP_LOOPS = 1   
 -- NUM_FRAMES: number of frames you are collecting (each frame consists of each of the
 -- trasmitter chirps as well as amount of chirp loops per transmitter chirp)
-NUM_FRAMES = 20
+NUM_FRAMES = 0 -- 0 means infinite
 -- PERIODICITY: period of each frame (aka, time between each set of (tx chirps and all of their chirp loops))
 PERIODICITY = 20 -- ms 
 -----------------------------------------------------------
